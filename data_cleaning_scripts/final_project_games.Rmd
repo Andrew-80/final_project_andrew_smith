@@ -1,0 +1,763 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+library(janitor)
+library(dbplyr)
+library(dplyr)
+```
+
+
+```{r}
+sales_2016 <- read_csv("sales-2016-with-ratings.csv")
+```
+
+```{r}
+glimpse(sales_2016)
+```
+
+```{r}
+head(sales_2016)
+```
+
+Look for missing variables and n/a. 
+Will need to drop_na()
+```{r}
+summary(sales_2016)
+```
+
+
+```{r}
+names(sales_2016)
+```
+
+```{r}
+sales_2016_clean <- sales_2016 %>%
+  clean_names()
+```
+
+```{r}
+names(sales_2016_clean)
+```
+
+
+From the information I note:
+
+na_sales = North American sales
+eu_sales = European sales
+jp_sales = Japan sales
+other_sales = rest of world sales
+global_sales = sum of all sales
+
+Also year_of_release is character class not an intiger, this will have to be changed.
+
+
+```{r}
+sales_2019 <- read_csv("sales-2019.csv")
+
+```
+
+```{r}
+glimpse(sales_2019)
+```
+
+```{r}
+head(sales_2019)
+```
+
+
+```{r}
+names(sales_2019)
+```
+
+Look for missing variables and n/a.
+Will need to drop_na()
+```{r}
+summary(sales_2019)
+```
+
+
+```{r}
+sales_2019_clean <- sales_2019 %>%
+  clean_names()
+```
+
+```{r}
+names(sales_2019_clean)
+```
+
+```{r}
+##sales_2019_clean %>% 
+  ##ggplot(aes(x = name, y = total_shipped)) +
+  ##geom_point()
+```
+
+```{r}
+##sales_2016_clean %>% 
+  ##ggplot(aes(x = name, y = global_sales)) +
+  ##geom_point()
+```
+
+There are a few outliers (higher sales) in the data
+
+```{r}
+sales_2016_clean %>% 
+  arrange(desc(global_sales))
+sales_2016_clean
+```
+
+```{r}
+boxplot(sales_2016_clean$global_sales)
+```
+
+The outlier is Wii Sports released in 2006
+
+```{r}
+view(sales_2016_clean)
+```
+
+```{r}
+view(sales_2019_clean)
+```
+
+```{r}
+sales_2019_clean %>% 
+  arrange(desc(total_shipped))
+sales_2019_clean
+```
+
+```{r}
+sales_2019_clean %>% 
+  arrange(desc(total_shipped))
+sales_2019_clean
+```
+
+```{r}
+boxplot(sales_2019_clean$total_shipped)
+```
+
+
+```{r}
+sales_2016_clean %>% 
+  select(name, critic_score, global_sales) %>% 
+  arrange(desc(critic_score))
+```
+
+```{r}
+sales_2019_clean %>% 
+  select(name, critic_score, total_shipped) %>% 
+  arrange(desc(critic_score))
+```
+
+
+```{r}
+sales_2016_clean %>% 
+  distinct(rating)
+```
+
+```{r}
+sales_2019_clean %>% 
+  distinct(esrb_rating)
+```
+
+esrb_rating and rating refer to the esrb_rating categories are the Rating Categories suggest age appropriateness.
+E = Everyone
+KA = known as Kids to Adults (KA) until 1998, when renamed "Everyone"
+EC = Early childhood (years 3+)
+E10	= Everyoen over age of 10
+T	= Teen
+M	= Mature (years 17+)
+AO = Adults only (years 18+)		
+RP = Rating pending			
+				
+				
+Looking at the vgchartzscore and vg_chartz_score columns.				
+```{r}
+sales_2019_clean %>% 
+  distinct(vgchartzscore)
+```			
+
+vg_chartz_score has nothing in any cells
+```{r}
+sales_2019_clean %>% 
+  distinct(vg_chartz_score)
+```
+
+
+```{r}
+sales_2019_clean %>% 
+  filter(total_shipped > 0) %>% 
+  count(global_sales) 
+```
+
+```{r}
+sales_2019_clean %>% 
+  filter(total_shipped > 0) %>% 
+  count(na_sales) 
+```
+
+
+```{r}
+sales_2019_clean %>% 
+  filter(total_shipped > 0) %>% 
+  count(pal_sales) 
+```
+
+```{r}
+sales_2019_clean %>% 
+  filter(total_shipped > 0) %>% 
+  count(jp_sales) 
+```
+
+```{r}
+sales_2019_clean %>% 
+  filter(total_shipped > 0) %>% 
+  count(other_sales)
+```
+
+```{r}
+sales_2019_clean %>% 
+  filter(global_sales > 0) %>%
+  select(global_sales, na_sales, pal_sales, jp_sales, other_sales) %>% 
+summary
+```
+
+
+```{r}
+global_sales_total <- sales_2019_clean %>% 
+  filter(global_sales > 0) %>% 
+  select(global_sales) %>% 
+  sum()
+global_sales_total
+```
+
+
+```{r}
+na_sales_total <- sales_2019_clean %>% 
+  filter(na_sales > 0) %>% 
+  select(na_sales) %>% 
+  sum()
+na_sales_total
+```
+
+
+```{r}
+pal_sales_total <- sales_2019_clean %>% 
+  filter(pal_sales > 0) %>% 
+  select(pal_sales) %>% 
+  sum()
+pal_sales_total
+```
+
+
+```{r}
+jp_sales_total <- sales_2019_clean %>% 
+  filter(jp_sales > 0) %>% 
+  select(jp_sales) %>% 
+  sum()
+jp_sales_total
+```
+
+
+```{r}
+other_sales_total <- sales_2019_clean %>% 
+  filter(other_sales > 0) %>% 
+  select(other_sales) %>% 
+  sum()
+other_sales_total
+```
+
+So what is the difference between global sales and all of the ohter regions
+```{r}
+global_sales_total - (jp_sales_total + na_sales_total + other_sales_total + pal_sales_total)
+```
+
+
+```{r}
+sales_2019_clean %>% 
+  filter(last_update > 0) %>% 
+  distinct(name, last_update) %>%
+  arrange(desc(last_update))
+```
+
+
+As the only variable i've not yet looked at
+```{r}
+sales_2019_clean %>% 
+  distinct(status)
+```
+
+
+```{r}
+sales_2019_clean %>% 
+  filter(vgchartzscore > 0) %>% 
+  select(name, critic_score, user_score, vgchartzscore)
+```
+
+Which games have 0 sales across all regions (filter by global_sales)
+```{r}
+sales_2019_clean %>% 
+  filter(global_sales == 0) %>% 
+  select(name, na_sales, pal_sales, jp_sales, other_sales)
+```
+
+
+```{r}
+sales_2019_clean
+```
+
+```{r}
+sales_2019_clean %>% 
+  select(name, platform, global_sales, na_sales, pal_sales, jp_sales, other_sales)
+
+```
+
+
+Is there more than 1 entry for each game? ie games have entries for each year
+There are 37,102 distint rows compared to 55,792 rows in the data set, a difference of 18,690
+
+```{r}
+sales_2019_clean %>%
+  distinct(name) %>%
+  count()
+  
+```
+
+```{r}
+sales_2019_clean %>%
+  count(name)
+
+```
+
+There are 61 names with more than 1 entry
+```{r}
+sales_2019_clean %>%
+  count(name > 1) %>%
+  arrange()
+
+```
+
+
+```{r}
+sales_2019_clean %>%
+  group_by(name, year) %>%
+  filter(n() >1) %>%
+  count()
+
+```
+
+So there are multiple entries under the same name for each platform eg 2010 FIFA World Cup South Africa
+```{r}
+sales_2019_clean %>%
+  filter(name == "2010 FIFA World Cup South Africa")
+
+```
+
+```{r}
+sales_2019_clean %>%
+  filter(name == "007: Quantum of Solace")
+
+```
+
+```{r}
+sales_2019_clean %>%
+  filter(name == "007: Quantum of Solace") %>%
+  ggplot(aes(x = platform, y = total_shipped)) +
+  geom_point()
+
+```
+
+There looks to be a difference between sales for example for 007: Quantum of Solace across platforms, so lets have a look at all platforms
+
+```{r}
+sales_2019_clean %>% 
+  filter(total_shipped != 0) %>%
+  ggplot(aes(x = platform, y = total_shipped)) +
+  geom_point()
+```
+
+```{r}
+sales_2019_clean %>% 
+  filter(total_shipped >10) %>%
+  ggplot(aes(x = platform, y = total_shipped)) +
+  geom_point()
+```
+
+Lets count by platform
+
+```{r}
+sales_2019_clean %>%
+  group_by(platform) %>%
+  filter(n() > 1) %>%
+  arrange(n()) %>%
+  count()
+
+```
+
+```{r}
+sales_2019_clean %>%
+  group_by(platform) %>%
+  arrange(n()) %>%
+  count()
+
+```
+
+
+
+```{r}
+sales_2019_clean %>%
+  group_by(platform) %>%
+  count()
+
+```
+
+```{r}
+sales_2019_clean_platform <- sales_2019_clean %>%
+  group_by(platform) %>%
+  mutate("platform_sales" = n())
+sales_2019_clean_platform
+
+```
+
+```{r}
+sales_2019_clean_platform %>%
+  count() %>%
+  arrange(desc(n))
+```
+ 
+Now lets have a look at Genre in the dataset 
+
+```{r}
+sales_2019_clean %>% 
+  filter(total_shipped >10) %>%
+  ggplot(aes(x = genre, y = total_shipped)) +
+  geom_point()
+
+```
+
+```{r}
+sales_2019_clean %>%
+  group_by(genre) %>%
+  count()
+
+```
+
+Also whatis the best publisher?
+```{r}
+sales_2019_clean %>% 
+  filter(total_shipped > 5) %>%
+  ggplot(aes(x = total_shipped, y = publisher)) +
+  geom_point()
+
+```
+
+Lets look at critic_score
+```{r}
+sales_2019_clean %>% 
+  filter(critic_score > 9.5) %>%
+  ggplot(aes(x = critic_score, y = name)) +
+  geom_point()
+
+```
+
+Summary of findings and comparision between the 2 datasets 1. sales_2016 and 2. sales_2019
+
+2 datasets 2016 and 2019
+
+2016
+ 
+"Critic_Count" 
+"User_Count"
+
+2019       v        2016
+"Rank"              = n/a
+[1] "Name"          = "Name"
+"basename"          = n/a (games names )
+"Genre"             =   "Genre"
+"ESRB_Rating"       = "Rating" As above this rating references if games are age appropriate
+"Platform"          = "Platform"
+"Publisher"         = "Publisher"
+"Developer"         = "Developer"
+"vg_chartz_score"   = n/a (also contains no variables)
+[9] "VGChartz_Score"= n/a
+"Critic_Score"      = "Critic_Score" (2016 and 2019 are scored differently. From 100 in 2016 and from 10 in 2019)
+"User_Score"        = [13] "User_Score"
+"Total_Shipped"     = n/a
+"Global_Sales"      = "Global_Sales"
+"NA_Sales"          =  "NA_Sales"  
+"PAL_Sales"        != [7] "EU_Sales" (PAL usually refers to Asia, Africa, Europe, South America and Oceania) SO these dont natch
+"JP_Sales"          =  "JP_Sales"
+[17] "Other_Sales"  =  "Other_Sales"
+"Year"              =  "Year_of_Release"
+"Last_Update"       = n/a
+"url"               = n/a
+"status"            = n/a. No variables in 
+"Vgchartzscore"     = n/a
+"img_url"           = n/a
+
+
+Convert years to Intiger
+```{r}
+###sales_2016_clean <- sales_2016_clean %>% 
+  #mutate(
+    #year_of_release = as.integer(year_of_release))
+#sales_2016_clean
+```
+
+
+```{r}
+###sales_2019_clean <- sales_2019_clean %>% 
+  #mutate(
+   # year = as.integer(year))
+#sales_2019_clean
+```
+
+```{r}
+#### sales_2019_clean <- sales_2019_clean %>% 
+  #mutate(
+   # year = as.integer(year))
+#sales_2019_clean
+```
+
+
+1. I will fill in missing sales volumes
+2. Exclude basename from 2019 results
+3. Change critic_score in 2016 to critic_score_2016 and do the same for 2019
+4. change pal_sales in 2019 to eu_sales_2019 and add the year to 
+
+```{r}
+sales_clean_2019_select_var <- sales_2019_clean %>% 
+  select(-basename,
+  -vg_chartz_score,
+  -url,
+  -status,
+  -img_url)
+sales_clean_2019_select_var
+```
+
+I still need to look at and possibly remove the NA's
+
+Lets amend the dates in for sales to 2019
+```{r}
+sales_clean_2019_year <- sales_clean_2019_select_var %>% 
+  rename(
+    "total_shipped_2019" = "total_shipped",
+    "global_sales_2019" = "global_sales",
+    "na_sales_2019" = "na_sales",
+    "eu_sales_2019" = "pal_sales",
+    "jp_sales_2019" = "jp_sales",
+    "other_sales_2019" = "other_sales")
+sales_clean_2019_year
+```
+
+```{r}
+view(sales_clean_2019_year)
+```
+
+Now lets do the same for 2016
+
+```{r}
+sales_2016_clean_select <- sales_2016_clean %>% 
+  select(-year_of_release,
+  -critic_count,
+  -user_count,
+  -user_score,
+  -rating)
+sales_2016_clean_select 
+```
+
+```{r}
+sales_clean_2016_year <- sales_2016_clean_select %>% 
+  rename(
+    "na_sales_2016" = "na_sales",
+    "eu_sales_2016" = "eu_sales",
+    "jp_sales_2016" = "jp_sales",
+    "other_sales_2016" = "other_sales",
+    "global_sales_2016" = "global_sales")
+sales_clean_2016_year
+```
+
+
+```{r}
+sales_clean_2019_select_var_bind <- sales_clean_2019_select_var %>%
+  rename(
+  "eu_sales" = "pal_sales"
+  )
+sales_clean_2019_select_var_bind
+```
+
+
+##### Bind columns
+
+```{r}
+sales_2016_clean_select_bind <- sales_2016_clean_select %>%
+  mutate(year_data = 2016)
+
+sales_2019_clean_select_bind <- sales_clean_2019_select_var_bind %>%
+  mutate(year_data = 2019)
+
+games_sales_full_bind <- bind_rows(sales_2016_clean_select_bind, sales_2019_clean_select_bind)
+games_sales_full_bind
+```
+
+```{r}
+unique(games_sales_full_bind$year_data)
+```
+
+```{r}
+games_sales_full_bind_select <- games_sales_full_bind %>% 
+  select(
+  -user_score)
+games_sales_full_bind_select 
+```
+
+
+```{r}
+names(sales_2016_clean)
+```
+
+```{r}
+names(sales_2019_clean)
+```
+
+########
+```{r}
+games_sales_full_bind_total <- mutate(games_sales_full_bind, total_global_sales = total_shipped + global_sales)
+games_sales_full_bind_total
+```
+
+
+
+
+```{r}
+games_sales_full_bind_total %>%
+  arrange(total_global_sales)
+games_sales_full_bind_total
+```
+
+```{r}
+summary(games_sales_full_bind_total)
+```
+
+
+```{r}
+write.csv(games_sales_full_bind_total, "games_sales_full_bind_total.csv")
+```
+
+```{r}
+games_sales_full_bind_total_longer <- games_sales_full_bind_total %>% 
+  pivot_longer(cols = c("na_sales", "eu_sales", "jp_sales", "other_sales"),
+               names_to = "sales_region",
+               values_to = "sales_region_millions")
+games_sales_full_bind_total_longer
+```
+
+```{r}
+games_sales_full_bind_total_longer %>%
+  filter(sales_region == "na_sales") %>%
+  summarise(Total = sum(sales_region_millions, na.rm = TRUE))
+```
+
+```{r}
+games_sales_full_bind_total_longer %>%
+  group_by(sales_region, year_data) %>%
+  summarise(Total = sum(sales_region_millions, na.rm = TRUE))
+```
+
+
+```{r}
+write.csv(games_sales_full_bind_total_longer, "games_sales_full_bind_total_longer.csv")
+```
+
+
+
+
+
+
+
+
+
+I also need to amend pal_sales to eu_sales
+
+```{r}
+games_sales_full <- left_join(sales_clean_2019_year, sales_clean_2016_year)
+games_sales_full
+```
+
+
+```{r}
+dim(games_sales_full)
+```
+
+
+```{r}
+view(games_sales_full)
+```
+
+```{r}
+summary(games_sales_full)
+```
+
+
+#################
+
+Replace NA with 0
+
+
+```{r}
+games_sales_full_na <- games_sales_full %>%
+    mutate(total_shipped_2019 = replace(total_shipped_2019, 
+                                    is.na(total_shipped_2019), 0
+                                   )) %>%
+  mutate(global_sales_2019 = replace(global_sales_2019, 
+                                    is.na(global_sales_2019), 0
+                                   )) %>%
+  mutate(global_sales_2016 = replace(global_sales_2016, 
+                                    is.na(global_sales_2016), 0
+                                   ))
+games_sales_full_na
+```
+
+
+```{r}
+games_sales_full_total <- mutate(games_sales_full_na, total_global_sales = total_shipped_2019 + global_sales_2019 + global_sales_2016)
+games_sales_full_total
+```
+
+
+
+```{r}
+games_sales_full_total %>%
+  arrange(games_sales_full_total)
+games_sales_full_total
+```
+
+
+```{r}
+view(games_sales_full_total)
+```
+
+
+```{r}
+write.csv(games_sales_full_total, "games_sales_full_total_cleaned.csv")
+```
+
+```{r}
+games_sales_full_longer <- games_sales_full_total %>% 
+  pivot_longer(cols = c("global_sales_2019", "na_sales_2019", "eu_sales_2019", "jp_sales_2019", "other_sales_2019"),
+               names_to = "sales_region",
+               values_to = "sales_region_millions")
+games_sales_full_longer
+```
+
+
+
+```{r}
+write.csv(games_sales_full_longer, "games_sales_full_longer.csv")
+```
+
+ 
+

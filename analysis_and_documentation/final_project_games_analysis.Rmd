@@ -1,0 +1,494 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+library(tidyr)
+library(ggplot2)
+library(dplyr)
+```
+
+```{r}
+library(RColorBrewer)
+```
+
+
+```{r}
+games_sales_full <- read_csv("games_sales_full_cleaned.csv")
+```
+
+
+```{r}
+games_sales_full_total <- read_csv("games_sales_full_total_cleaned.csv")
+```
+
+Due to the size of the file I will focuson on the top sales for analysis
+```{r}
+games_sales_full_total_top_200 <- games_sales_full_total %>%
+  arrange(desc(total_global_sales)) %>%
+  slice(1:200)
+games_sales_full_total_top_200
+```
+
+```{r}
+games_sales_full_total_top_50 <- games_sales_full_total %>%
+  arrange(desc(total_global_sales)) %>%
+  slice(1:50)
+games_sales_full_total_top_50
+```
+
+
+```{r}
+summary(games_sales_full_total)
+```
+
+##### 1. Use graph
+```{r}
+games_sales_full_total_top_200 %>%
+  group_by(genre) %>% 
+  ggplot(aes(x = genre, fill = genre) ) +
+  geom_bar() +
+  labs(title = "Games count by genre") +
+  labs(x = "Genre") +
+  labs(y = "Number of Games") +
+  labs(fill = "Genre") +
+  coord_flip()
+
+```
+
+```{r}
+games_sales_full_total_top_200 %>%
+  group_by(genre) %>% 
+  ggplot(aes(x = genre, fill = genre) ) +
+  geom_bar() +
+  theme(legend.position="none") +
+  labs(title = "Games count by genre") +
+  labs(x = "Genre") +
+  labs(y = "Number of Games") +
+  labs(fill = "Genre") +
+  coord_flip()
+ggsave("genre_count.png")
+```
+
+
+
+##### 2. Use graph ???? 
+```{r}
+games_sales_full_total_top_200 %>% 
+  group_by(publisher) %>% 
+  ggplot(aes(x = genre, fill = publisher) ) +
+  geom_bar() +
+  labs(title = "Games count by publisher and genre") +
+  labs(x = "Genre") +
+  labs(y = "Number of Games") +
+  labs(fill = "Publisher") +
+  coord_flip()
+```
+
+##### 
+```{r}
+games_sales_full_total_top_200 %>% 
+  group_by(developer) %>% 
+  ggplot(aes(x = genre, fill = developer) ) +
+  geom_bar() +
+  labs(title = "Games count by developer and genre") +
+  labs(x = "Genre") +
+  labs(y = "Number of Games") +
+  labs(fill = "Developer") +
+  coord_flip()
+
+```
+
+```{r}
+games_sales_full_total_top <- games_sales_full_total %>%
+  arrange(desc(total_global_sales)) %>%
+  slice(1:50)
+games_sales_full_total_top
+
+```
+
+##### 3. Use graph
+```{r}
+games_sales_full_total_top %>% 
+  group_by(developer) %>% 
+  ggplot(aes(x = genre, fill = developer) ) +
+  geom_bar() +
+  labs(title = "Games count by developer and genre") +
+  labs(x = "Genre") +
+  labs(y = "Number of Games") +
+  labs(fill = "Developer") +
+  coord_flip()
+ggsave("genre_developer.png")
+```
+
+########## 
+
+##### 3.5 Use graph - Genre and Dev flipped 
+```{r}
+games_sales_full_total_top %>% 
+  group_by(developer) %>% 
+  ggplot(aes(x = developer, fill = genre) ) +
+  geom_bar() +
+  labs(title = "Games count by developer and genre") +
+  labs(x = "Developer") +
+  labs(y = "Number of Games") +
+  labs(fill = "Genre") +
+  coord_flip()
+ggsave("developer_genre.png")
+```
+
+
+
+```{r}
+games_sales_full_total_top_games <- games_sales_full_total %>%
+  arrange(desc(total_global_sales)) %>%
+  slice(1:20)
+games_sales_full_total_top_games
+```
+
+##### 4. Use graph
+```{r}
+games_sales_full_total_top_games %>% 
+  group_by(name) %>% 
+  ggplot(aes(x = name, y = total_global_sales, fill = name)) +
+  geom_col() +
+  labs(title = "Top 20 games sales by name") +
+  labs(x = "Name") +
+  labs(y = "Top 20 global sales") +
+  labs(fill = "Name") +
+  coord_flip()
+ggsave("top20_games.png")
+```
+
+```{r}
+games_sales_full_total_top_games %>% 
+  group_by(name) %>% 
+  ggplot(aes(x = name, y = total_global_sales, fill = name)) +
+  geom_col() +
+  theme(legend.position="none") +
+  labs(title = "Top 20 games sales by name") +
+  labs(x = "Name") +
+  labs(y = "Top 20 global sales") +
+  labs(fill = "Name") +
+  coord_flip()
+ggsave("top20_games.png")
+
+```
+
+```{r}
+games_sales_full_total_top_games_genre <- games_sales_full_total %>%
+  arrange(desc(total_global_sales)) %>%
+  slice(1:40)
+games_sales_full_total_top_games_genre
+```
+
+```{r}
+games_sales_full_total_top_games_genre_select <- games_sales_full_total %>%
+  arrange(desc(total_global_sales)) %>%
+  select(rank, name, genre, platform, total_global_sales) %>%
+  slice(1:50)
+games_sales_full_total_top_games_genre_select
+```
+
+```{r}
+games_sales_full_total_top_games_genre %>% 
+  group_by(name) %>% 
+  ggplot(aes(x = name, y = total_global_sales, fill = genre)) +
+  geom_col() +
+  labs(title = "Top 40 games sales by name and genre") +
+  labs(x = "Name") +
+  labs(y = "Top 40 global sales") +
+  labs(fill = "Genre") +
+  coord_flip()
+ggsave("top40_games_name_genre.png")
+
+```
+
+k-means
+```{r}
+#games_sales_full_total_top_games_genre %>% 
+ # unnest(cols = c(augmented)) %>%
+  #filter(k == 2) %>%
+# ggplot(aes(x = murder, y = assault, colour = .cluster, label = .rownames)) +
+ # geom_point(aes(color = .cluster)) +
+ # geom_text(hjust = 0, vjust = - 0.5, size = 3)
+```
+
+
+
+##### 5. Use graph
+```{r}
+games_sales_full_total_top_200 %>% 
+  group_by(developer) %>% 
+  ggplot(aes(x = genre, fill = platform)) +
+  geom_bar() +
+  labs(title = "Games count by platform and genre") +
+  labs(x = "Genre") +
+  labs(y = "Number of Games") +
+  labs(fill = "Platform") +
+  coord_flip()
+ggsave("count_platform_genre.png")
+```
+
+
+##### 6. Use graph - graph 5. swapped use 5 OR 6
+```{r}
+games_sales_full_total_top_200 %>% 
+  group_by(developer) %>% 
+  ggplot(aes(x = platform, fill = genre)) +
+  geom_bar() +
+  labs(title = "Games count by genre and platform") +
+  labs(x = "Platform") +
+  labs(y = "Number of Games") +
+  labs(fill = "Genre") +
+  coord_flip()
+ggsave("count_genre_platform.png")
+```
+
+Already used as graph 1
+```{r}
+games_sales_full_total_top_200 %>% 
+  group_by(genre) %>% 
+  ggplot(aes(x = genre, fill = genre)) +
+  geom_bar() +
+  labs(title = "Games count by genre") +
+  labs(x = "Genre") +
+  labs(y = "Number of Games") +
+  labs(fill = "Genre") +
+  coord_flip()
+ggsave("genre_count.png")
+```
+
+Games by platform
+```{r}
+games_sales_full_total_top_200 %>% 
+  group_by(genre) %>% 
+  ggplot(aes(x = platform, fill = platform) ) +
+  geom_bar() +
+  labs(title = "Games count by Platform") +
+  labs(x = "Platform") +
+  labs(y = "Number of Games") +
+  labs(fill = "Platform") +
+  coord_flip()
+
+```
+
+
+##### 7. Use graph
+```{r}
+games_sales_full_total_top_200 %>% 
+  group_by(genre) %>% 
+  ggplot(aes(x = platform, fill = platform) ) +
+  geom_bar() +
+  theme(legend.position="none") +
+  labs(title = "Games count by Platform") +
+  labs(x = "Platform") +
+  labs(y = "Number of Games") +
+  labs(fill = "Platform") +
+  coord_flip()
+ggsave("platform_count.png")
+```
+
+
+Games by region - global market
+
+```{r}
+games_sales_full_longer %>% 
+  group_by(genre) %>% 
+  ggplot(aes(x = sales_region, y = sales_region_millions) ) +
+  geom_line() +
+  labs(title = "Geographic breakdown of Global Sales") +
+  labs(x = "Specific global market") +
+  labs(y = "Sales (millions)") +
+  labs(fill = "Genre") +
+  coord_flip()
+
+```
+
+```{r}
+games_sales_full_total_top_200 %>% 
+  group_by(genre) %>% 
+  ggplot(aes(x = total_global_sales, fill = genre) ) +
+  geom_bar() +
+  labs(title = "Geographic breakdown of Global Sales") +
+  labs(x = "Sales (millions)") +
+  labs(y = "Specific global market") +
+  labs(fill = "Genre") +
+  coord_flip()
+
+```
+
+
+### Hide the legend
+```{r}
+games_sales_full_total_top_200 %>% 
+  group_by(genre) %>% 
+  ggplot(aes(x = total_global_sales, fill = genre)) +
+  geom_bar() +
+  theme(legend.position="none") +
+  labs(title = "Geographic breakdown of Global Sales") +
+  labs(x = "Sales (millions)") +
+  labs(y = "Specific global market") +
+  labs(fill = "Genre") +
+  coord_flip()
+
+```
+
+
+```{r}
+games_sales_full_total_top_200 %>% 
+  gather("id", "value", 13:16) %>% 
+  ggplot(., aes(total_global_sales, value))+
+  geom_point()+
+  geom_smooth(method = "lm", se=FALSE, color="black")+
+  facet_wrap(~id)
+```
+
+```{r}
+games_sales_full_longer <- read_csv("games_sales_full_longer.csv")
+```
+
+
+
+```{r}
+games_sales_full_bind_total_longer <- read_csv("games_sales_full_bind_total_longer.csv")
+```
+
+```{r}
+games_sales_full_bind_total_longer %>%
+  group_by(sales_region, year_data) %>%
+  summarise(Total = sum(sales_region_millions, na.rm = TRUE))
+```
+
+
+
+
+```{r}
+games_sales_full_bind_total_longer %>%
+  group_by(sales_region, year_data) %>%
+  summarise(Total = sum(sales_region_millions, na.rm = TRUE)) %>%
+  ggplot(aes(x = sales_region, y = Total)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Total gobal sales by region") +
+  labs(x = "Global market region") +
+  labs(y = "Total sales (millions)") +
+  facet_wrap(~year_data)
+
+```
+
+```{r}
+ggplot(games_sales_full_bind_total_longer, aes(sales_region, total_global_sales)) +
+  geom_boxplot() +
+  labs(title = "Distribution of sales by genre") +
+  labs(x = "Genre") +
+  labs(y = "Sales (millions)") +
+   coord_flip()
+```
+
+
+##### 8. Use graph
+
+
+```{r}
+games_sales_full_bind_total_longer_region %>%
+  ggplot(aes(x = sales_region, y = sales_region_millions)) +
+  geom_col() +
+  labs(title = "Total gobal sales by region") +
+  labs(x = "Global market region") +
+  labs(y = "Total sales (millions)") +
+  scale_fill_brewer () +
+  facet_wrap(~year_data)
+```
+
+
+```{r}
+games_sales_full_bind_total<- read_csv("games_sales_full_bind_total.csv")
+```
+
+
+##### Dont use
+```{r}
+games_sales_full_bind_total_longer %>%
+  ggplot(aes(x = sales_region, y = sales_region_millions, fill = genre)) +
+  geom_col() +
+  labs(title = "Total global sales by region") +
+  labs(x = "Total sales") +
+  labs(y = "Global market region")
+ggsave("sales_region_genre.png")
+```
+
+
+XXXXXXXX WRONG DS
+```{r}
+games_sales_full_bind_total_longer %>%
+  ggplot(aes(x = genre, y = sales_region_millions, fill = sales_region)) +
+  geom_col() +
+  labs(title = "Total global sales by genre and region") +
+  labs(x = "Global market region") +
+  labs(y = "Total sales") +
+  coord_flip()
+ggsave("sales_genre_region.png")
+```
+
+
+####### Correct DS
+```{r}
+games_sales_full_bind_total_longer %>%
+  group_by(sales_region, year_data, genre, sales_region_millions) %>%
+  summarise(Total = sum(sales_region_millions, na.rm = TRUE)) %>%
+  ggplot(aes(x = genre, y = sales_region_millions, fill = sales_region)) +
+  geom_col() +
+  labs(title = "Total global sales by genre and region") +
+  labs(x = "Global market region") +
+  labs(y = "Total sales") +
+  coord_flip()
+ggsave("sales_genre_region.png")
+```
+
+
+
+
+##### 9. Use graph
+Games mean (max/ min) sales
+```{r}
+ggplot(games_sales_full_total_top_200, aes(genre, total_global_sales)) +
+  geom_boxplot() +
+  labs(title = "Distribution of sales by genre") +
+  labs(x = "Genre") +
+  labs(y = "Sales (millions)") +
+   coord_flip()
+ggsave("distribution_sales_by_genre.png")
+```
+
+##### 10. Use graph
+```{r}
+ggplot(games_sales_full_total_top_200, aes(platform, total_global_sales)) +
+  geom_boxplot() +
+  labs(title = "Distribution of sales by platform") +
+  labs(x = "Platform") +
+  labs(y = "Sales (millions)") +
+   coord_flip()
+ggsave("distribution_sales_by_platform.png")
+```
+
+
+
+
+shipped / critic score
+```{r}
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
